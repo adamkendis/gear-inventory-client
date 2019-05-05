@@ -1,13 +1,15 @@
 import React from 'react';
 import axios from 'axios';
-import Nav from './Nav.js';
-import Login from './Login.js';
-import CreateUser from './CreateUser.js'
+// import Nav from './Nav.js';
+import LoginScreen from './LoginScreen.js';
+
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      loggedIn: false,
+    };
   }
 
   componentDidMount = () => {
@@ -20,15 +22,23 @@ class App extends React.Component {
       })
   }
 
+  loggedIn = () => {
+    this.setState({loggedIn: true});
+  }
+
   render() {
+    let { loggedIn } = this.state;
+
     return (
-      <div>
-        <Nav/>
-        <Login />
+      <div className="main" >
+        {
+          !loggedIn ? 
+            <LoginScreen loggedIn={this.loggedIn}/> :
+            <div>Logged in!</div>
+        }
       </div>
     )
   }
-
 }
 
 export default App;

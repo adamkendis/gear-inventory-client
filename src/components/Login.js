@@ -1,4 +1,5 @@
 import React from 'react';
+import { Form, Message } from 'semantic-ui-react';
 import axios from 'axios';
 
 import CreateUser from './CreateUser.js';
@@ -11,54 +12,59 @@ class Login extends React.Component {
       email: "",
       password: "",
       newUser: false,
+      badLogin: false,
+      successLogin: false,
     };
   }
 
   onSubmit = e => {
     e.preventDefault();
-    axios.post('http://localhost:8000/api/user/token/', this.state)
+    let { loggedIn } = this.props;
+    let { email, password } = this.state
+    axios.post('http://localhost:8000/api/user/token/', {email, password})
       .then(res => {
         console.log(res);
         localStorage.setItem('auth_token', res.data.token);
       })
       .then(() => {
         let token = localStorage.getItem('auth_token');
+        this.setState({successLogin: true, badLogin: false});
+        loggedIn();
         console.log(token);
+      })
+      .catch(err => {
+        console.log(err);
+        this.setState({badLogin: true})
       })
   }
 
   render() {
-    let { newUser } = this.state;
+    let { email, newUser, badLogin, successLogin } = this.state;
+
     
     if (!newUser) {
       return (
-        <form onSubmit={this.onSubmit}>
-          <fieldset>
-            <legend>Login</legend>
-            <p>
-              <label htmlFor='email'>Email</label>
-              <input
-                type='text' id='email'
-                onChange={e => this.setState({email: e.target.value})} />
-            </p>
-            <p>
-              <label htmlFor="password">Password</label>
-              <input
-                type='text' id='password'
-                onChange={e => this.setState({password: e.target.value})} />
-            </p>
-            <p>
-              <button type='submit'>Login</button>
-            <p>
-              <a href="# " onClick={() => {this.setState({newUser: true})}}>Create New Account</a>
-            </p>
-            </p>
-  
-          </fieldset>
-        </form>
+        <div>
+          <Form onSubmit={this.onSubmit} success={successLogin} warning={badLogin}>
+            <Form.Input 
+              label='Email' 
+              type='email' 
+              placeholder='Email Address'
+              onChange={e => this.setState({email: e.target.value})} />
+            <Form.Input 
+              label='Password' 
+              type='password' 
+              placeholder='Password'
+              onChange={e => this.setState({password: e.target.value})} />
+            <Message success header="Logged in!" content="Successfully logged in." />
+            <Message warning header="Try again" content="Incorrect email or password" />
+            <Form.Button>Login</Form.Button>
+            <a href='# ' onClick={() => this.props.createNewAccount()}>Create new account</a>
+          </Form>
+        </div>
       )
     } else {
-      return <CreateUser />
+      return <CreateUser email={email}/>
     }
   }
 }
